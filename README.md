@@ -1,4 +1,4 @@
-# Saravana_Enterprises_App *(Beta)*
+# Saravana Enterprises App *(Beta)*
 *<u>Kivy / KivyMD</u>* App for **Billing** and **Dynamic Prices** for both **retail** and **wholesale** **shops**
 
 **Dependencies:**
