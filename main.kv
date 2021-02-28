@@ -1,0 +1,252 @@
+<CustomToolbar>:
+	size_hint_y: None
+	height: self.theme_cls.standard_increment
+	padding: "5dp"
+	spacing: "12dp"
+	canvas.before:
+		Rectangle:
+			pos: self.pos
+			size: self.size
+			source: f"assets/images/bg/bg_toolbar.png"
+
+	MDIconButton:
+		id: menu
+		icon: "menu"
+		pos_hint: {"center_y": .5}
+		size_hint: (.5, .5)
+		theme_text_color: "Custom"
+		text_color: app.white
+		on_release: app.set_nav_state(state="open")
+
+	MDLabel:
+		id: title
+		text: "Products"
+		font_style: 'H6'
+		theme_text_color: "Custom"
+		text_color: app.white
+
+	MDTextField:
+		id: search_bar
+		hint_text: "Search"
+		color_mode: 'custom'
+		current_hint_text_color: app.white
+		disabled:True
+		opacity: 0
+		on_text:app.search_drop_menu.dismiss();app.search_menu(self.text,True);app.search_drop_menu.open()
+		on_focus:if not self.focus:app.set_search_mode(False)
+
+<CustomCarouselItem>
+	MDRelativeLayout:
+		size_hint_y: None
+		height: root.height - dp(240)
+		size_hint_x: None
+		width:root.width - dp(100)
+		pos_hint: {'center_x': .5}
+		y: dp(150)
+	
+		FitImage:
+			radius: [20,]
+			source: root.source
+
+		Widget:
+			canvas:
+				RoundedRectangle:
+					radius: [20,]
+					source: f"assets/images/bg/bg_canvas.png"
+					pos: self.pos
+					size: self.size
+
+		MDBoxLayout:
+			radius: [0, 0, 20, 20]
+			size_hint_y: None
+			height: 86
+			md_bg_color: app.white
+			padding: "8dp"
+
+			TwoLineListItem:
+				text: "[b][i][u]Product[u][i][b]"
+				secondary_text: root.name_product
+				divider: None
+				_no_ripple_effect: True
+
+<AddShopDialog>
+	orientation: "vertical"
+	spacing: "12dp"
+	size_hint_y: None
+	height: "160dp"
+
+	MDTextField:
+		hint_text: "Shop Name"
+
+	MDTextField:
+		hint_text: "Balance"
+		text:"0"
+
+	MDTextField:
+		hint_text: "Phone"
+		text:"+91"
+NavigationLayout:
+	ScreenManager:
+		id: screens
+		
+		MDScreen:
+			name: 'product_carousel_screen'
+			
+			FitImage:
+				id:fit
+				source: app.source
+			
+			MDBoxLayout:
+				orientation: 'vertical'
+				CustomToolbar:
+					id:cus
+					elevation: 10
+					MDIconButton:
+				        id:mag
+				        theme_text_color: "Custom"
+				        text_color: app.white
+				        icon: 'magnify'
+				        pos_hint: {'center_x': .5, 'center_y': .5}
+				        on_release:
+				            app.set_search_mode(True)
+				MDCarousel:
+					id:product_carousel
+					loop:True
+					on_index:
+						fit.source = self.slides[self.index].children[0].children[0].children[2].source
+								
+			MDFloatingActionButtonSpeedDial:
+				id:fb
+				data: app.float_button_icons
+				root_button_anim: True
+				callback:app.float_button_callback
+		MDScreen: #need to reimplement with MDFloatingActionButtonSpeedDial
+			name: 'add_screen'
+			
+			MDBoxLayout:
+				orientation: 'vertical'
+				CustomToolbar:
+					elevation: 10	
+
+				ScrollView:
+					pos_hint: {"center_x": .5}
+					
+					MDGridLayout:
+						cols: 1
+						rows: 3
+						spacing:25
+						padding:25
+
+						MDCard:
+							on_release:
+								print(area.text)
+							MDLabel:
+								id:area
+								text:'area'
+								halign: 'center'
+						MDCard:
+							on_release:
+								print(shop.text)
+							MDLabel:
+								id:shop
+								text:'shop'
+								halign: 'center'
+						MDCard:
+							on_release:
+								print(product.text)
+							MDLabel:
+								id:product
+								text:'product'
+								halign: 'center'
+		
+		MDScreen:
+			name: 'add_shop_detail_screen'
+			
+			MDBoxLayout:
+				orientation: 'vertical'
+				
+				CustomToolbar:
+					elevation: 10
+					MDIconButton:
+						id: button_2
+						icon: "plus"
+						pos_hint: {"center_y": .5}
+						theme_text_color: "Custom"
+						text_color: app.white
+						on_release: app.add_shop_dialog()
+				
+				ScrollView:
+					pos_hint: {"center_x": .5, "center_y": .5}
+			
+			MDLabel:
+				text: "    Add a Shop : "
+				pos_hint: {'center_y': .81}
+			
+			MDSeparator:
+				size_hint_x: .9
+				pos_hint: {'center_x': .5, 'center_y': .78}
+				color:app.black
+
+			MDDropDownItem:
+				id: area_menu
+				size_hint_x: .75
+				pos_hint: {'center_x': .5, 'center_y': .71}
+				on_release: app.area_menu.open()
+			
+	MDNavigationDrawer:
+		id: nav_drawer
+		
+		ContentNavigationDrawer:
+			orientation: 'vertical'
+			padding: "8dp"
+			spacing: "8dp"
+
+			ScrollView:
+				DrawerList:
+					id: md_list
+					
+					MDList:
+						
+						OneLineIconListItem:
+							text: "Products"
+							on_release:
+								app.product_carousel_autoplay()
+								nav_drawer.set_state("close") 
+								screens.current = 'product_carousel_screen'  
+									
+							IconLeftWidget:
+								icon: "face-profile"
+								on_release: 
+									app.product_carousel_autoplay()
+									nav_drawer.set_state("close")
+									screens.current = 'product_carousel_screen'
+								   
+											
+						OneLineIconListItem:
+							text: "add"
+							on_release: 
+								app.product_carousel_event.cancel()
+								nav_drawer.set_state("close")
+								screens.current = 'add_screen'
+
+							IconLeftWidget:
+								icon: "plus"
+								on_release:
+									app.product_carousel_event.cancel()
+									nav_drawer.set_state("close")
+									screens.current = 'add_screen'
+
+						OneLineIconListItem:
+							text: "Input"
+							on_release: 
+								app.product_carousel_event.cancel()
+								nav_drawer.set_state("close")
+								screens.current = 'add_shop_detail_screen'
+
+							IconLeftWidget:
+								icon: "cursor-text"
+								on_release:
+									app.product_carousel_event.cancel()
+									nav_drawer.set_state("close")
+									screens.current = 'add_shop_detail_screen'        	
+
