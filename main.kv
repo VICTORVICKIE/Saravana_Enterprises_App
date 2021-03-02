@@ -2,7 +2,7 @@
 	size_hint_y: None
 	height: self.theme_cls.standard_increment
 	padding: "5dp"
-	spacing: "12dp"
+	spacing: "5dp"
 	canvas.before:
 		Rectangle:
 			pos: self.pos
@@ -13,15 +13,15 @@
 		id: menu
 		icon: "menu"
 		pos_hint: {"center_y": .5}
-		size_hint: (.5, .5)
 		theme_text_color: "Custom"
 		text_color: app.white
-		on_release: app.set_nav_state(state="open")
+		on_release:
+			app.set_nav_state(state="open")
 
 	MDLabel:
 		id: title
 		text: "Products"
-		font_style: 'H6'
+        font_style: "Body1"
 		theme_text_color: "Custom"
 		text_color: app.white
 
@@ -34,6 +34,17 @@
 		opacity: 0
 		on_text:app.search_drop_menu.dismiss();app.search_menu(self.text,True);app.search_drop_menu.open()
 		on_focus:if not self.focus:app.set_search_mode(False)
+
+<MDIconAnimationButton@MDIconButton>:
+	angle:0
+	canvas.before:
+		PushMatrix
+		Rotate:
+			angle:self.angle
+			axis:1,1,1
+			origin:self.center
+	canvas.after:
+		PopMatrix
 
 <CustomCarouselItem>
 	MDRelativeLayout:
@@ -85,7 +96,8 @@
 	MDTextField:
 		hint_text: "Phone"
 		text:"+91"
-NavigationLayout:
+
+MDNavigationLayout:
 	ScreenManager:
 		id: screens
 		
@@ -98,28 +110,111 @@ NavigationLayout:
 			
 			MDBoxLayout:
 				orientation: 'vertical'
+				
 				CustomToolbar:
 					id:cus
 					elevation: 10
+					
 					MDIconButton:
 				        id:mag
 				        theme_text_color: "Custom"
 				        text_color: app.white
 				        icon: 'magnify'
-				        pos_hint: {'center_x': .5, 'center_y': .5}
 				        on_release:
 				            app.set_search_mode(True)
+				    
+				    MDIconAnimationButton:
+				        id:tune
+				        theme_text_color: "Custom"
+				        text_color: app.white
+				        icon: 'tune'
+				        on_release:
+			                if aks.get_status() == "close": aks.open(); app.animate(self,360);self.icon='check'
+			                else: aks.dismiss();app.animate(self,0); self.icon='tune'
+
 				MDCarousel:
 					id:product_carousel
 					loop:True
 					on_index:
 						fit.source = self.slides[self.index].children[0].children[0].children[2].source
+			MDIconButton:
+				id: search_menu_center_button
+				opacity: 0
+				disabled:True
+				pos_hint: {"center_x": .5,"center_y": .8}
+			AKSwipeMenu:
+		        id:aks
+		        allow_swipe:False
+
+		        AKSwipeMenuBottomContent:
+
+			        MDFloatLayout:
+			            md_bg_color: 1,1,1,1
+			            orientation: 'vertical'
+			            size_hint_y: None
+			            height: root.height - 64
+			            
+			            MDCard:
+			                elevation:10
+			                orientation: "vertical"
+			                padding: "8dp"
+			                pos_hint: {"center_x": .5, "center_y": .5}
+			                
+			                MDFloatLayout:
+			                    rows:2
+			                    pos_hint: {"center_x": .5, "center_y": .5}
+			                    
+			                    MDCard:
+			                        elevation:8
+			                        orientation: "horizontal"
+			                        size_hint: None, None
+			                        size: "290dp", "45dp"
+			                        pos_hint: {"center_x": .5, "center_y": .97}
+			                       
+			                        MDRelativeLayout:
+			                            MDSeparator:
+			                                height: "1dp"
+			                                color:app.gray
+			                                pos_hint: {'center_x': .5, 'center_y': .99}
+			                            MDLabel:
+			                                halign:'left'
+			                                text:'  Settings'
+			                                pos_hint: {'center_x': .5, 'center_y': .5}
+			                   
+			                    MDCard:
+			                        elevation:5
+			                        orientation: "horizontal"
+			                        size_hint: None, None
+			                        size: "290dp", "180dp"
+			                        pos_hint: {"center_x": .5, "center_y": .75}
+			                        
+			                        MDRelativeLayout:
+			                            MDIconButton:
+			                                md_bg_color:1,1,1,1
+			                                icon: "assets/images/icons/fps.png"
+			                                pos_hint: {'center_x': .1, 'center_y': .85}
+			                            MDLabel:
+			                                halign:'left'
+			                                text:'Show FPS : '
+			                                pos_hint: {'center_x': .75, 'center_y': .85}
+			                            MDCheckbox:
+			                                size_hint: None, None
+			                                size: "48dp", "48dp"
+			                                pos_hint: {'center_x': .7, 'center_y': .85}
+			                                on_release:
+			                                	if self.active:app.show_fps(True)
+			                                	if self.active == False:app.show_fps(False)
+			                            MDSeparator:
+			                                height: "1dp"
+			                                color:app.gray
+			                                pos_hint: {'center_x': 0.5, 'center_y': .70}
 								
 			MDFloatingActionButtonSpeedDial:
 				id:fb
 				data: app.float_button_icons
 				root_button_anim: True
 				callback:app.float_button_callback
+				
 		MDScreen: #need to reimplement with MDFloatingActionButtonSpeedDial
 			name: 'add_screen'
 			
