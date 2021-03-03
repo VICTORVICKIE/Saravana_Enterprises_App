@@ -84,8 +84,7 @@ class Storage(dict):
 			search_shop = list(search.keys())[self.FIRST_INDEX]
 
 			if search_shop == shop:
-				index = area_list.index(search)
-				return index            
+				return area_list.index(search)                  
 	
 	def add_area(self, area):
 
@@ -95,8 +94,7 @@ class Storage(dict):
 	def add_shop(self, area, shop, balance = 0):
 
 		area_list = self[area]
-		tmp = {}
-		tmp[shop] = [{"Balance":balance}]
+		tmp = {shop: [{"Balance":balance}]}
 		area_list.append(tmp)
 		self[area] = area_list
 
@@ -104,8 +102,7 @@ class Storage(dict):
 
 		index = self.get_index(area, shop)
 		shop_list = self[area][index][shop]
-		tmp = {}
-		tmp[product] = price
+		tmp = {product: price}
 		shop_list.append(tmp)
 		self[area][index][shop] = shop_list
 
