@@ -31,7 +31,7 @@ class FpsMonitor(Label):
         Clock.schedule_interval(self.update_fps, self.updated_interval)
 
     def update_fps(self, *args):
-        self._fps_value = f"FPS: {round(Clock.get_fps(),0)}"
+        self._fps_value = f"{round(Clock.get_fps(),0)}"
 
 
 def product_pic_dict(PRODUCTS_DIR):

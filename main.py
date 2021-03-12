@@ -46,7 +46,7 @@ class BillingApp(MDApp):
         self.root.ids.nav_drawer.set_state(state)
 
     def animate(self, widget, angle):
-        anim = Animation(angle=angle, duration=0.3, t="out_cubic")
+        anim = Animation(angle=angle, duration=0.5, t="out_cubic")
         anim.start(widget)
 
     # Carousel
