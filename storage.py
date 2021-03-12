@@ -1,51 +1,3 @@
-Goal = {
-	"Redhills": [
-		{
-			"Shop1": [
-				{
-					"product1": "price1"
-				},
-				{
-					"product2": "price2"
-				}
-			]
-		},
-		{
-			"Shop2": [
-				{
-					"product1": "price1"
-				},
-				{
-					"product2": "price2"
-				}
-			]
-		}
-	],
-	"Madhavaram": [
-		{
-			"Shop3": [
-				{
-					"product3": "price1"
-				},
-				{
-					"product4": "price2"
-				}
-			]
-		},
-		{
-			"Shop4": [
-				{
-					"product3": "price1"
-				},
-				{
-					"product4": "price2"
-				}
-			]
-		}
-	]
-}
-
-
 class Storage(dict):
 
 	self = dict()
@@ -149,7 +101,7 @@ class Storage(dict):
 
 		area_shops = [f"{list(shop.keys())[self.FIRST_INDEX]}" 
 					  for shop in self[area]
-				     ]
+					 ]
 		return area_shops
 
 
@@ -168,6 +120,33 @@ class Storage(dict):
 
 
 if __name__ == '__main__':
+	Goal = {
+			"Redhills": [
+				{"Shop1": [{'Balance': 0},{"product1": "price1"}, {"product2": "price2"}]},
+				{"Shop2": [{'Balance': 0},{"product1": "price1"}, {"product2": "price2"}]},
+			],
+			"Madhavaram": [
+				{"Shop3": [{'Balance': 0},{"product3": "price1"}, {"product4": "price2"}]},
+				{"Shop4": [{'Balance': 0},{"product3": "price1"}, {"product4": "price2"}]},
+			],
+			}
+			
+	storage = Storage()
+	storage.add_area("Redhills")
+	storage.add_area("Madhavaram")
 
-	a = Storage(Goal)
-	
+	storage.add_shop("Redhills","Shop1")
+	storage.add_shop("Redhills","Shop2")
+	storage.add_shop("Madhavaram","Shop3")
+	storage.add_shop("Madhavaram","Shop4")
+
+	storage.add_product("Redhills","Shop1","product1","price1")
+	storage.add_product("Redhills","Shop1","product2","price2")
+	storage.add_product("Redhills","Shop2","product1","price1")
+	storage.add_product("Redhills","Shop2","product2","price2")
+	storage.add_product("Madhavaram","Shop3","product3","price1")
+	storage.add_product("Madhavaram","Shop3","product4","price2")
+	storage.add_product("Madhavaram","Shop4","product3","price1")
+	storage.add_product("Madhavaram","Shop4","product4","price2")
+
+	print(storage == Goal)
