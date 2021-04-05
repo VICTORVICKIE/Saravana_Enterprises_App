@@ -1,7 +1,6 @@
 """
 Behaviors
 =========
-
 Modules and classes implementing various behaviors for buttons etc.
 """
 
@@ -14,7 +13,11 @@ from .backgroundcolorbehavior import (
 from .elevation import (
     CircularElevationBehavior,
     CommonElevationBehavior,
+    FakeCircularElevationBehavior,
+    FakeRectangularElevationBehavior,
+    ObservableShadow,
     RectangularElevationBehavior,
+    RoundedRectangularElevationBehavior,
 )
 from .focus_behavior import FocusBehavior
 from .magic_behavior import MagicBehavior

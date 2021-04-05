@@ -1,233 +1,135 @@
-# IMPORT
-from imports.Imports import *
+from utils import mobile_screen_sim, product_pic_dict
+mobile_screen_sim(0.25)
 
-# CONFIG
-config = ConfigParser()
-config.read("main.ini")
+# kivy
+from kivy.properties import ColorProperty, NumericProperty, ObjectProperty, StringProperty
+from kivy.uix.behaviors import ButtonBehavior
+from kivy.utils import get_color_from_hex
+from kivy.uix.image import Image
+from kivy.lang import Builder
+from kivy.clock import Clock
+from kivy.metrics import dp
 
-# CONSTANTS
-AREA = literal_eval(config.get("STORAGE", "area"))
-PRODUCTS = literal_eval(config.get("STORAGE", "products"))
+# kivymd
+from kivymd.uix.behaviors import FakeRectangularElevationBehavior, CircularRippleBehavior
+from kivymd.uix.behaviors import RectangularRippleBehavior
+from kivymd.uix.floatlayout import MDFloatLayout
+from kivymd.uix.button import BaseFlatIconButton
+from kivymd.uix.carousel import MDCarousel
+from kivymd.theming import ThemableBehavior
+from kivymd.uix.label import MDLabel
+from kivymd.uix.card import MDCard
+from kivymd.app import MDApp
+
+from kivymd_extensions.akivymd.uix.piechart import AKPieChart
 
 # Paths
-APP_DIR = dirname(__file__)
-IMAGE_DIR = join(APP_DIR, "assets", "images")
-PRODUCTS_DIR = join(IMAGE_DIR, "Products")
+from pathlib import Path
+import sys
+import os
 
-# SIZE
-if platform == "win":
-    Window.size = (300, 600)
+if getattr(sys, "frozen", False):
+	os.environ["SE_BILL_BOOK"] = sys._MEIPASS
+else:
+	os.environ["SE_BILL_BOOK"] = str(Path(__file__).parent)
 
-# APP
-class BillingApp(MDApp):
+PRODUCTS_DIR = os.path.join(os.environ["SE_BILL_BOOK"],'assets','images','Products')
 
-    # App Constants
-    product_pic_dict = product_pic_dict(PRODUCTS_DIR)
-    float_button_icons = {"cart": "Product", "store": "shop"}
+class Toolbar(ThemableBehavior, FakeRectangularElevationBehavior, MDFloatLayout):  # Toolbar
+	def __init__(self, **kwargs):
+		super().__init__(**kwargs)
+		self.md_bg_color = 0, 0, 0, 0
 
-    # Properties
-    shop_dialog = ObjectProperty(None)
-    shop_balance = NumericProperty()
-    shop_name = StringProperty()
-    source = StringProperty()
+class Appbar(ThemableBehavior, FakeRectangularElevationBehavior, MDFloatLayout):  # Toolbar
+	position = StringProperty('Top')
+	def __init__(self, **kwargs):
+		super().__init__(**kwargs)
+		self.md_bg_color = 1, 1, 1, 1
 
-    white = ColorProperty([1, 1, 1, 1])
-    black = ColorProperty([0, 0, 0, 1])
-    gray = get_color_from_hex("000000")
-    gray[3] = 0.12
+class CarouselItem(MDCarousel):  # Carousel
+	source = StringProperty()
+	name_product = StringProperty()
 
-    # Init
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.kv = Builder.load_file("main.kv")
+class ChartContainer(MDFloatLayout,ButtonBehavior,RectangularRippleBehavior,Image):
+	pass
+class CarouselContainer(MDFloatLayout):
+	pass
 
-    # Navigation Drawer
-    def set_nav_state(self, state):
-        self.root.ids.nav_drawer.set_state(state)
+class CustomImageIconButton(CircularRippleBehavior, ButtonBehavior, MDLabel):
+	user_font_size = NumericProperty()
+	icon = StringProperty("android")
+	source = StringProperty()
+	def __init__(self, **kwargs):
+		super().__init__(**kwargs)
+class CustomIconFlatButton(BaseFlatIconButton):
+	user_font_size = NumericProperty()
+	icon = StringProperty()
+class BillBook(MDApp):
 
-    def animate(self, widget, angle):
-        anim = Animation(angle=angle, duration=0.5, t="out_cubic")
-        anim.start(widget)
+	product_pic_dict = product_pic_dict(PRODUCTS_DIR)
+	items = [{"Credit": 50, "Overdue": 50}]
+	custom_colors = [{"Credit": '#45a63c',"Overdue":'#db3d43'}]
+	shop_dialog = ObjectProperty(None)
+	shop_balance = NumericProperty()
+	shop_name = StringProperty()
+	source = StringProperty()
 
-    # Carousel
-    def product_carousel(self, *args):
-        for product_image_name in listdir(PRODUCTS_DIR):
-            path_to_product_image = join(PRODUCTS_DIR, product_image_name)
+	gray = get_color_from_hex("000000")
+	gray[3] = 0.12
+	
+	def __init__(self, **kwargs):
+		super().__init__(**kwargs)
+		self.kv = Builder.load_file("main.kv")
 
-            self.kv.ids.product_carousel.add_widget(
-                CustomCarouselItem(
-                    source=path_to_product_image,
-                    name_product=self.product_pic_dict[product_image_name],
-                )
-            )
+	def product_carousel(self, *args):
+		for product_image_name in os.listdir(PRODUCTS_DIR):
+			path_to_product_image = os.path.join(PRODUCTS_DIR, product_image_name)
 
-    # Carousel AutoPlay Scheduler
-    def product_carousel_autoplay(self):
-        self.product_carousel_event = Clock.schedule_interval(
-            self.product_carousel_callback, 5
-        )
+			self.kv.ids.carousel_container.ids.product_carousel.add_widget(
+				CarouselItem(
+					source=path_to_product_image,
+					name_product=self.product_pic_dict[product_image_name],
+				)
+			)
 
-    # Carousel AutoPlay
-    def product_carousel_callback(self, dt):
-        self.kv.ids.product_carousel.load_next()
+	# Carousel AutoPlay Scheduler
+	def product_carousel_autoplay(self):
+		self.product_carousel_event = Clock.schedule_interval(
+			self.product_carousel_callback, 5
+		)
 
-    # Callbacks
-    def float_button_callback(self, button):
-        print(button.icon)
+	# Carousel AutoPlay
+	def product_carousel_callback(self, dt):
+		self.kv.ids.carousel_container.ids.product_carousel.load_next()
+	
+	def sales_chart(self):
 
-    # Search Bar Menu
-    def search_menu(self, text="", search=False):
-        search_list = AREA + PRODUCTS
-        search_menu_items = []
-        if text:
-            for search_term in search_list:
-                if search:
-                    condition = (
-                        text in search_term
-                        or text in search_term.lower()
-                        or text in search_term.upper()
-                    )
-                    if condition:
-                        search_menu_items.append({"text": f"{search_term}"})
 
-        self.search_drop_menu = MDDropdownMenu(
-            caller=self.kv.ids.search_menu_center_button,
-            items=search_menu_items,
-            position="center",
-            max_height=150,
-            width_mult=10,
-        )
-        self.search_drop_menu.bind(on_release=self.set_item)
+		self.piechart = AKPieChart(
+			items=self.items,
+			pos_hint={"center_x": .5},
+			size_hint=[None, None],
+			size=(dp(180), dp(180)),
+			color_mode='Custom',
+			custom_colors = self.custom_colors
+		)
+		self.kv.ids.chart_container.ids.chart_box.add_widget(self.piechart)
+		
+	def on_pause(self):
+			return True
 
-    def set_item(self, instance_menu, instance_menu_item):
-        def set_item(interval):
-            self.kv.ids.cus.ids.search_bar.text = instance_menu_item.text
-            instance_menu.dismiss()
+	def on_resume(self):
+		return True
 
-        Clock.schedule_once(set_item, 0.25)
+	def build(self):
+		return self.kv
 
-    def set_search_mode(self, mode):
-
-        if mode:
-
-            size = 0
-
-            self.kv.ids.cus.ids.search_bar.opacity = 1
-            self.kv.ids.cus.ids.search_bar.disabled = False
-            self.kv.ids.cus.ids.search_bar.focus = True
-            self.kv.ids.cus.ids.search_bar.line_color_focus = self.white
-
-            self.kv.ids.mag.opacity = 0
-            self.kv.ids.mag.disabled = True
-
-            Animation(opacity=1, d=0.2).start(self.kv.ids.cus.ids.search_bar)
-            Animation(size=(size, size), opacity=0, d=0.2).start(self.kv.ids.mag)
-            Animation(size=(size, size), opacity=0, d=0.2).start(self.kv.ids.tune)
-
-        else:
-
-            size = dp(42)
-
-            self.kv.ids.cus.ids.search_bar.opacity = 0
-            self.kv.ids.cus.ids.search_bar.disabled = True
-
-            self.kv.ids.mag.opacity = 1
-            self.kv.ids.mag.disabled = False
-
-            Animation(opacity=0, d=0.2).start(self.kv.ids.cus.ids.search_bar)
-            Animation(size=(size, size), opacity=1, d=0.2).start(self.kv.ids.mag)
-            Animation(size=(size, size), opacity=1, d=0.2).start(self.kv.ids.tune)
-
-    # Area Menu
-    def area_menu(self):
-        area_list = [{"text": area} for area in AREA]
-        self.area_menu = MDDropdownMenu(
-            caller=self.kv.ids.area_menu,
-            items=area_list,
-            width_mult=4,
-            position="bottom",
-        )
-        self.kv.ids.area_menu.text = "Pick an Area"
-        self.area_menu.bind(on_release=self.set_area)
-
-    def set_area(self, instance_menu, instance_menu_item):
-        self.current_area = instance_menu_item.text
-        self.kv.ids.area_menu.set_item(self.current_area)
-        self.area_menu.dismiss()
-
-    # Shop Dialog
-    def add_shop_dialog(self):
-        if not self.shop_dialog:
-            self.shop_dialog = MDDialog(
-                title="Add :",
-                type="custom",
-				overlay_color=(0, 0, 0, 0),
-                content_cls=AddShopDialog(),
-                buttons=[
-                    MDFlatButton(
-                        text="CANCEL",
-                        text_color=self.theme_cls.primary_color,
-                        on_release=self.close_shop_dialog,
-                    ),
-                    MDFlatButton(
-                        text="ADD",
-                        text_color=self.theme_cls.primary_color,
-                        on_release=self.get_shop_details,
-                    ),
-                ],
-            )
-        self.shop_dialog.set_normal_height()
-        self.shop_dialog.open()
-
-    def get_shop_details(self, inst):
-        try:
-            if not self.shop_dialog.content_cls.children[2].text == "":
-                self.shop_name = self.shop_dialog.content_cls.children[2].text
-                self.shop_balance = self.shop_dialog.content_cls.children[1].text
-                print(self.current_area, self.shop_name, self.shop_balance)
-                self.shop_dialog.content_cls.children[2].text = ""
-                self.shop_dialog.content_cls.children[1].text = "0"
-                self.shop_dialog.content_cls.children[0].text = "+91"
-                self.shop_dialog.dismiss()
-
-        except Exception as e:
-            print(e)
-            self.shop_dialog.dismiss()
-
-    def close_shop_dialog(self, inst):
-        self.shop_dialog.content_cls.children[2].text = ""
-        self.shop_dialog.content_cls.children[1].text = "0"
-        self.shop_dialog.content_cls.children[0].text = "+91"
-        self.shop_dialog.dismiss()
-
-    def show_fps(self, show):
-        condition = instance_in_children(Window, FpsMonitor)[0]
-        children = instance_in_children(Window, FpsMonitor)[1]
-        if show:
-            if not condition:
-                monitor = FpsMonitor()
-                Window.remove_widget(monitor)
-                monitor.start()
-                Window.add_widget(monitor)
-        else:
-            if condition:
-                Window.remove_widget(children)
-
-    # Initializing App
-    def on_start(self):
-        self.data_storage = Storage()
-        self.search_menu()
-        self.product_carousel()
-        self.product_carousel_autoplay()
-        self.area_menu()
-
-    # Building App
-    def build(self):
-        return self.kv
-
+	def on_start(self):
+		self.product_carousel()
+		self.product_carousel_autoplay()
+		self.sales_chart()
 
 if __name__ == "__main__":
 
-    app = BillingApp()
-    print(kivymd.__version__)
-    app.run()
+	app = BillBook()
+	app.run()
