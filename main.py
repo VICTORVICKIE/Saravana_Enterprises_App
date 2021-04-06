@@ -2,24 +2,13 @@ from utils import mobile_screen_sim, product_pic_dict
 mobile_screen_sim(0.25)
 
 # kivy
-from kivy.properties import ColorProperty, NumericProperty, ObjectProperty, StringProperty
-from kivy.uix.behaviors import ButtonBehavior
-from kivy.utils import get_color_from_hex
-from kivy.uix.image import Image
+from kivy.properties import NumericProperty, ObjectProperty, StringProperty
 from kivy.lang import Builder
 from kivy.clock import Clock
 from kivy.metrics import dp
 
 # kivymd
-from kivymd.uix.behaviors import FakeRectangularElevationBehavior, CircularRippleBehavior
-from kivymd.uix.behaviors import RectangularRippleBehavior
-from kivymd.uix.floatlayout import MDFloatLayout
-from kivymd.uix.button import BaseFlatIconButton
-from kivymd.uix.carousel import MDCarousel
-from kivymd.theming import ThemableBehavior
-from kivymd.uix.label import MDLabel
-from kivymd.uix.card import MDCard
-from kivymd.app import MDApp
+from custom_widgets import *
 
 from kivymd_extensions.akivymd.uix.piechart import AKPieChart
 
@@ -35,35 +24,7 @@ else:
 
 PRODUCTS_DIR = os.path.join(os.environ["SE_BILL_BOOK"],'assets','images','Products')
 
-class Toolbar(ThemableBehavior, FakeRectangularElevationBehavior, MDFloatLayout):  # Toolbar
-	def __init__(self, **kwargs):
-		super().__init__(**kwargs)
-		self.md_bg_color = 0, 0, 0, 0
 
-class Appbar(ThemableBehavior, FakeRectangularElevationBehavior, MDFloatLayout):  # Toolbar
-	position = StringProperty('Top')
-	def __init__(self, **kwargs):
-		super().__init__(**kwargs)
-		self.md_bg_color = 1, 1, 1, 1
-
-class CarouselItem(MDCarousel):  # Carousel
-	source = StringProperty()
-	name_product = StringProperty()
-
-class ChartContainer(MDFloatLayout,ButtonBehavior,RectangularRippleBehavior,Image):
-	pass
-class CarouselContainer(MDFloatLayout):
-	pass
-
-class CustomImageIconButton(CircularRippleBehavior, ButtonBehavior, MDLabel):
-	user_font_size = NumericProperty()
-	icon = StringProperty("android")
-	source = StringProperty()
-	def __init__(self, **kwargs):
-		super().__init__(**kwargs)
-class CustomIconFlatButton(BaseFlatIconButton):
-	user_font_size = NumericProperty()
-	icon = StringProperty()
 class BillBook(MDApp):
 
 	product_pic_dict = product_pic_dict(PRODUCTS_DIR)
@@ -74,9 +35,6 @@ class BillBook(MDApp):
 	shop_name = StringProperty()
 	source = StringProperty()
 
-	gray = get_color_from_hex("000000")
-	gray[3] = 0.12
-	
 	def __init__(self, **kwargs):
 		super().__init__(**kwargs)
 		self.kv = Builder.load_file("main.kv")
@@ -114,7 +72,27 @@ class BillBook(MDApp):
 			custom_colors = self.custom_colors
 		)
 		self.kv.ids.chart_container.ids.chart_box.add_widget(self.piechart)
-		
+	
+
+	# def set_search_list(self, text="", search=False):
+
+ #        def add_search_item(name_icon):
+ #            self.kv.ids.rv.data.append(
+ #                {
+ #                    "viewclass": "KitchenSinkOneLineIconListItem",
+ #                    "icon": name_icon,
+ #                    "text": name_icon,
+ #                }
+ #            )
+
+ #        self.kv.ids.rv.data = []
+ #        for name_icon in md_icons.keys():
+ #            if search:
+ #                if text in name_icon:
+ #                    add_search_item(name_icon)
+ #            else:
+ #                add_search_item(name_icon)
+
 	def on_pause(self):
 			return True
 
