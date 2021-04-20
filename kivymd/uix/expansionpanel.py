@@ -166,7 +166,11 @@ Builder.load_string(
 <MDExpansionChevronRight>:
     icon: 'chevron-right'
     disabled: True
+    # theme_text_color: "Custom"
+    # text_color: 0, 0, 0, 0.38
 
+    # _no_ripple_effect:True
+    # on_release:self.parent.parent.parent.check_open_panel(self.parent.parent.parent.panel_cls)
     canvas.before:
         PushMatrix
         Rotate:

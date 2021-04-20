@@ -1,112 +1,473 @@
-MDNavigationLayout:
-	ScreenManager:
-		id: screens
+#:import SlideTransition kivy.uix.screenmanager.SlideTransition
+#:import WipeTransition kivy.uix.screenmanager.WipeTransition
+#:import FadeTransition kivy.uix.screenmanager.FadeTransition
+#:import md_icons kivymd.icon_definitions.md_icons
+#:import hex2rgb kivy.utils.get_color_from_hex
+#:import BG_DIR main.BG_DIR
+
+#:set app_theme hex2rgb("#10566B")
+#:set gray 0.0, 0.0, 0.0, 0.12
+#:set white 1.0, 1.0, 1.0, 1.0
+
+
+<Toolbar>:
+	increment: 1.5 * root.theme_cls.standard_increment
+	
+    pos_hint: {"top": 1}
+	size_hint_y: None
+	height:  root.increment
+	
+    elevation:25
+
+	canvas.before:
+		Rectangle:
+			pos: root.pos
+			size: root.size
+			source: f"{BG_DIR}/bg_toolbar.png"
+
+	
+    MDIconButton:
+        id: app_icon
+        
+        pos_hint: {"left":1,"center_y": 0.5}
+        
+        icon: "magnify"
+        
+        theme_text_color: "Custom"
+        text_color: white
+        
+        opacity: 1
+
+	
+    MDLabel:
+		id: title
+        
+        pos_hint: {"center_x":0.6,"center_y": 0.5}
+        font_style: "H6"
 		
-		MDScreen:
-			id: product_carousel_screen
-			name: 'product_carousel_screen'
+        text: "Saravana Enterprises"
+		
+        theme_text_color: "Custom"
+		text_color: white
+		
+        opacity: 1.0
+	
+	
+    MDCardTextField:
+		id:search_bar
+        
+        pos_hint: {"center_x":0.5, "center_y": 0.5}
+        size_hint: (0.85, None)
+        height: root.increment
+		
+        hint_text: "Search"
+		grow_card: False 
+		multiline: False
+        disabled: True
+        opacity: 0
+        
+        md_bg_color: white
+        cursor_color:app_theme
+        icon_left_color: app_theme
+        icon_right_color: app_theme
+        
+        icon_left: "arrow-left"
+        icon_right: "close"
 
-			MDFloatLayout:
+        on_text:root.set_search_list(self.text,True)
+        icon_left_callback: lambda x:root.set_search_mode(mode = False)
+        icon_right_callback: lambda x: exec("self.text = ''")
 
-				Toolbar:
-					pos_hint: {'top': 1}
-					id: toolbar
-					opacity: 1
+	
+    MDIconButton:
+        id: mag
+        
+        pos_hint: {"right":1,"center_y": 0.5}
+        
+        icon: "magnify"
 
-					MDLabel:
-						id: title
-						text: "Saravana Enterprises"
-						pos_hint: {'center_x': .65,"center_y": .6}
-				        font_style: "H5"
-						theme_text_color: "Custom"
-						text_color: white
-						opacity: 1.0
-					
-					MDCardTextField:
-						hint_text: "Search"
-						grow_card: False 
-						multiline: False
-		                md_bg_color: white
-		                cursor_color:app_theme
-		                icon_left_color: app_theme
-		                icon_right_color: app_theme
-		                icon_left: "arrow-left"
-		                icon_right: "close"
-		                size_hint_x: 0.96
-		                pos_hint: {'center_y': 0.6, 'center_x':.5}
-		                opacity: 1.0
-		                disabled: False
-					
-					MDIconButton:
-				        id:mag
-						pos_hint: {"right": .975,"center_y": .6}
-				        theme_text_color: "Custom"
-				        text_color: white
-				        user_font_size:18
-				        icon: 'magnify'
-				        opacity: 0
-				
-				
+        theme_text_color: "Custom"
+        text_color: white
+        
+        opacity: 1
 
-    			CarouselContainer:
-    				id:carousel_container
-    				_no_ripple_effect:True
-    				size_hint_y: .5
-    				pos_hint: {'center_y': .65}
+        on_release:
+            root.set_search_mode(mode = True)
 
-				ChartContainer:
-					size_hint_y: .25
-					pos_hint: {'top': .35}
-					id:chart_container
-					on_release:print('in chart container')
 
-				Appbar:
-					pos_hint: {'bottom': 1}
-					id: bottom_toolbar
-					increment: self.theme_cls.standard_increment
-					size_hint_y: None
-					height: self.increment
-					
-					CustomImageIconButton:
-						theme_text_color: "Custom"
-				        text_color: white
-				        user_font_size:18
-					    icon:'plus'
-					    source:f"assets/images/bg/bg_toolbar.png"
-					    on_release:product_carousel_screen.export_to_png('ss.png')
+<Appbar>:
+	increment: root.theme_cls.standard_increment
+	
+    pos_hint: {"bottom": 1}
+	size_hint_y: None
+	height:  root.increment
+	
+    elevation:25
 
-					MDSeparator:
-						pos_hint: {'top':1}
-				        height: "1dp"
-				        color: gray
+	canvas.before:
+		Rectangle:
+			pos: root.pos
+			size: root.size
 
-				    CustomIconFlatButton:
-				    	pos_hint: {'center_y': .5,'center_x':.2}
-				    	markup:True
-				    	icon:'cart-outline'
-				    	text_color: app_theme
-    					text: "[b][i][color=#10566B]ORDERS[/color][i][b]"
 
-    				CustomIconFlatButton:
-				    	pos_hint: {'center_y': .5,'center_x':.8}
-				    	markup:True
-				    	icon:'store-outline'
-				    	text_color: app_theme
-    					text: "[b][i][color=#10566B]MARKET[/color][i][b]"
-    			AKSwipeMenu:
-			        id: search_results_container
-			        allow_swipe:False
+	CustomImageIconButton:
+		
+	    icon:"plus"
+	    source:f"{BG_DIR}/bg_toolbar.png"
 
-			        AKSwipeMenuBottomContent:
-			        	RecycleView:
-			                id: rv
-			                key_viewclass: "viewclass"
-			                key_size: "height"
+        theme_text_color: "Custom"
+        text_color: white
+        
+        # on_release:app.kv.export_to_png("SS.png")
 
-			                RecycleBoxLayout:
-			                    padding: "10dp"
-			                    default_size: None, dp(48)
-			                    default_size_hint: 1, None
-			                    size_hint_y: None
-			                    height: self.minimum_height
-			                    orientation: "vertical"
+
+	MDSeparator:
+		pos_hint: {"top":1}
+        height: "1dp"
+        color: gray
+
+
+    CustomIconFlatButton:
+    	pos_hint: {"center_y": .5,"center_x":.2}
+    	height: root.theme_cls.standard_increment - 10
+    	icon:"cart-outline"
+		text: "[b][i][color=#10566B]ORDERS[/color][i][b]"
+        
+        text_color: app_theme
+        markup:True
+    	
+        on_release:print(root.increment)
+
+	CustomIconFlatButton:
+    	pos_hint: {"center_y": .5,"center_x":.8}
+        height: root.theme_cls.standard_increment - 10
+		
+        text: "[b][i][color=#10566B]" + root.right_text + "[/color][i][b]"
+    	icon: root.right_icon
+    	
+        text_color: app_theme
+    	markup:True
+
+        on_release:
+            if app.kv.ids.screens.current == 'product_carousel_screen': app.switch_screen(app.kv.ids.screens.current, 'area_screen')
+            elif app.kv.ids.screens.current == 'area_screen': exec("app.kv.ids.screens.transition = FadeTransition()\napp.kv.ids.screens.current = 'product_carousel_screen'")
+
+
+<CustomImageIconButton>
+    pos_hint: {"center_x": .5, "center_y": .5}
+    halign:"center"
+    size_hint: None, None
+    size: (dp(56), dp(56))
+    font_size: root.user_font_size if root.user_font_size else self.font_size
+    
+    font_style: "Icon"
+    text: u"{}".format(md_icons[self.icon]) if self.icon in md_icons else ""
+    
+    
+    canvas.before:
+        Ellipse:
+            pos: self.pos
+            size: self.size
+            source: self.source
+        Color:
+            rgba: app_theme
+        SmoothLine:
+            width: 1
+            circle:
+                (self.center_x, self.center_y, min(self.width, self.height)/ 2)
+
+
+<CustomIconFlatButton>
+    padding: (dp(12), dp(12))
+	width: label_txt.texture_size[0]
+    
+    markup: False
+    
+
+    MDFloatLayout:
+        id: item_container
+        
+
+        MDIcon:
+            id: label_txt_icon
+            
+            pos: [self.pos[0], self.pos[1]]
+            pos_hint: {"center_x": .5, "center_y": .75}
+            valign: "middle"
+            halign: "center"
+            
+            size_hint_x: None
+            text_size: (None, root.height)
+            height: self.texture_size[1]
+            font_size: dp(26)
+            
+            icon: root.icon
+            
+            theme_text_color: "Custom"
+            text_color:
+                (root.theme_cls.primary_color if not root.text_color else root.text_color) \
+                if not root.disabled else root.theme_cls.disabled_hint_text_color
+            opposite_colors: root.opposite_colors
+
+
+        MDLabel:
+            id: label_txt
+            
+            pos_hint: {"center_x": .5, "center_y": .35}
+            valign: "bottom"
+            halign: "center"
+
+            size_hint_x: None
+            text_size: (None, root.height)
+            font_style: "Caption"
+            height: self.texture_size[1]
+            font_size: dp(18)
+
+            text: root.text
+            
+            theme_text_color: "Custom"
+            opposite_colors: root.opposite_colors
+            
+            markup: root.markup
+
+
+<OneLineAvatarSearchListItem>
+    markup: True
+    ImageLeftWidget:
+        source: root.source
+
+
+<CustomCarouselItem>:
+	MDCard:
+        pos_hint: {"center_x":0.5,"center_y":0.4}
+        size_hint: .95,.7
+    	
+        radius:[5,5,5,5]
+    	elevation:0
+    	
+        canvas.before:
+	        Color:
+	            rgba: 0, 0, 0, .12
+	        Line:
+	            width: 2.
+	            rounded_rectangle: (self.x, self.y, self.width, self.height,5)
+        
+
+        MDBoxLayout:
+        	orientation: "vertical"
+        	
+            MDBoxLayout:
+        		orientation: "vertical"
+                size_hint_y: .2
+        		padding: [5, 0, 0, 0]
+                
+                MDLabel:
+                	id:lab
+                    font_style:"Subtitle2"
+                	text:root.product
+            
+            MDBoxLayout:
+        		orientation: "vertical"
+                size_hint_y: .8
+                
+                FitImage:
+                	radius:[0,0,5,5]
+                    source: root.source
+
+
+<CustomCarousel>:
+    MDSeparator:
+        pos_hint: {"top": .99}
+        height: "1dp"
+        color: gray
+	
+
+    MDBoxLayout:
+		id:box
+		
+		orientation: "horizontal"
+        pos_hint: {"center_y": .875}
+		padding: [app.pad, 0, 0, 0]
+		
+        MDLabel:
+            font_style:"H6"
+			text: "Products"
+        
+        MDIconButton:
+            pos_hint: {"center_y": .5,"right": 1}
+            icon:"plus"
+
+
+	MDBoxLayout:
+		pos_hint: {"top": 1}
+		orientation: "vertical"
+		
+        MDCarousel:
+			id:car
+			loop:True
+
+    
+    MDSeparator:
+        height: "1dp"
+        color: gray
+        pos_hint: {"center_y": .0005}
+
+
+<CustomChart>:
+    MDBoxLayout:
+        id:box
+        orientation: "horizontal"
+        pos_hint: {"center_y": .9}
+        padding: [app.pad, 0, 0, 0]
+        
+        MDLabel:
+            id:label
+            font_style:"H6"
+            text: "Outcome"
+        
+        MDIconButton:
+            pos_hint: {"center_y": .5,"right": 1}
+            icon:"arrow-right"
+
+
+    MDBoxLayout:
+        id: chart_box
+        orientation: "vertical"
+        pos_hint: {"center_y": .6}
+
+        AKPieChart:
+            id:pie
+            pos_hint:{"center_x": .5}
+            size_hint:[None, None]
+            size: (app.chart_size,app.chart_size)
+
+            items:root.items
+
+            color_mode: "Custom"
+            custom_colors : root.custom_colors
+
+
+<ShopContainer@MDBoxLayout>:
+	pos_hint: {"center_x":.5}
+	
+	MDCard:
+    	RecycleView:
+            id: rv
+            key_viewclass: "viewclass"
+            key_size: "height"
+
+            RecycleBoxLayout:
+                padding: "10dp"
+                default_size: None, dp(48)
+                default_size_hint: 1, None
+                size_hint_y: None
+                height: self.minimum_height
+                orientation: "vertical"
+
+<CustomAddButton>:
+    size_hint: 1, None
+    height: dp(56)
+
+    MDFloatLayout:
+        orientation: "vertical"
+        spacing: 5
+        MDIconButton:
+            pos_hint: {"center_y": .5, "right":1}
+            icon:"plus-box-outline"
+            _no_ripple_effect:True
+            theme_text_color: "Custom"
+            text_color: (0, 0, 0, 0.98)
+
+        MDLabel:
+            id: add_btn_lbl
+            
+            pos_hint: {"center_y": 0.5}
+            x: app.pad
+            
+            markup: True
+            font_style:"H6"
+            text: "[i]Areas[/i]"
+
+            theme_text_color: "Custom"
+            text_color: (0, 0, 0, 0.9)
+        MDSeparator:
+            y: root.parent.height - dp(56)
+            height: "1dp"
+            color: gray
+
+<BillBook@MDBoxLayout>:
+    orientation: "vertical"
+
+BillBook:
+    id:bill_book
+    Toolbar:
+        id: toolbar
+        opacity: 1
+    
+    MDNavigationLayout:
+    	ScreenManager:
+    		id: screens
+    		
+    		MDScreen:
+    			id: product_carousel_screen
+    			name: "product_carousel_screen"
+
+                MDBoxLayout:
+    				orientation: "vertical"
+
+    				MDBoxLayout:
+    					orientation: "vertical"
+    					CustomCarousel:
+    						id:custom_carousel
+                            disabled: False
+
+                            on_release:
+                                if not self.disabled:print("Add Products")
+    						
+                        CustomChart:
+                            id:custom_chart
+                            disabled: False
+
+                            on_release:
+                                if not self.disabled:print("Open Details") 
+
+    				Appbar:
+    					id: appbar
+                        right_icon:"store-outline"
+                        right_text:"MARKET"
+        			 
+        			
+
+            MDScreen:
+                id: search_result_screen
+                name: "search_result_screen"
+                
+                ShopContainer:
+                    id:search_results_container
+
+            MDScreen:
+                id: area_screen
+                name: "area_screen"
+
+                MDBoxLayout:
+                    orientation: "vertical"
+                    CustomAddButton:
+                        on_release:
+                            print("add area")
+                    MDBoxLayout:
+                        ScrollView:
+                            MDList:
+                                md_bg_color: white
+                                id: area_container
+
+                    Appbar:
+                        id: appbar
+                        right_icon:"home-outline"
+                        right_text:"HOME"
+
+            MDScreen:
+                id: shop_screen
+                name: 'shop_screen'
+
+                ShopContainer:
+                    id: shop_container

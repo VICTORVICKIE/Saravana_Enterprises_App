@@ -24,8 +24,7 @@ color_mode
 Builder.load_string(
     """
 <PieChartNumberLabel>
-    size_hint: None, None
-    size: dp(40), dp(30)
+    size_hint: 1,1
     text: "%s\\n%d%%" % (root.title, root.percent)
     font_size: dp(10)
     halign: "center"

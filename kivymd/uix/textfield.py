@@ -419,7 +419,8 @@ from kivy.properties import (
     ObjectProperty,
     OptionProperty,
     VariableListProperty,
-    ColorProperty
+    ColorProperty,
+    DictProperty
 )
 from kivy.uix.textinput import TextInput
 from kivy.core.text import DEFAULT_FONT
@@ -656,6 +657,8 @@ Builder.load_string(
 <MDCardTextField>:
     adaptive_height: True
     md_bg_color: 1, 1, 1, 1
+    text:textfield.text
+    
     MDCard:
         id: card
         ripple_behavior: root.card_ripples
@@ -665,10 +668,14 @@ Builder.load_string(
         height: self.minimum_height
         elevation: 0
         md_bg_color: root.md_bg_color
+        
         on_release:
             root.dispatch("on_release")
+        
         TextInput:
+            pos_hint:root.adjustment
             id: textfield
+            text: root.text
             grow: True
             initial_height: 0
             focus: root.focus
@@ -1553,6 +1560,8 @@ class MDCardTextField(MDBoxLayout, RectangularElevationBehavior, ThemableBehavio
     icon_left = StringProperty("")
 
     icon_right = StringProperty("")
+
+    adjustment = DictProperty()
 
     def __init__(self, **kwargs):
         self.icon_right_widget = MDIconButton(theme_text_color="Custom", text_color=[0, 0, 0, 1])
