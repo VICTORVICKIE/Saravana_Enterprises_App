@@ -150,7 +150,7 @@
 
         on_release:
             if app.kv.ids.screens.current == 'product_carousel_screen': app.switch_screen(app.kv.ids.screens.current, 'area_screen')
-            elif app.kv.ids.screens.current == 'area_screen': exec("app.kv.ids.screens.transition = FadeTransition()\napp.kv.ids.screens.current = 'product_carousel_screen'")
+            elif app.kv.ids.screens.current == 'area_screen': app.switch_screen(app.kv.ids.screens.current, 'product_carousel_screen')
 
 
 <CustomImageIconButton>
