@@ -4,7 +4,7 @@
 **Dependencies:**
  - [Python 3.6+](https://www.python.org/)
  
--   [Kivy](https://github.com/kivy/kivy)  >= 2.0.0 ([Installation](https://kivy.org/doc/stable/gettingstarted/installation.html))
+-   [Kivy](https://github.com/kivy/kivy)  == 2.0.0 ([Installation](https://kivy.org/doc/stable/gettingstarted/installation.html))
 
 **Developer:**
-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [VK](https://github.com/VICTORVICKIE)
+- [VK](https://github.com/VICTORVICKIE)
