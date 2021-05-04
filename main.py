@@ -3,7 +3,7 @@ mobile_screen_sim('samsung')
 
 
 from kivy.properties import NumericProperty, StringProperty, \
-	ObjectProperty
+	ObjectProperty, OptionProperty, ColorProperty
 
 from kivy.uix.screenmanager import ShaderTransition
 from kivy.uix.behaviors import ButtonBehavior
@@ -54,7 +54,7 @@ ICON_DIR = os.path.join(os.environ['BillBook'],'assets','images','icons')
 BG_DIR = os.path.join(os.environ['BillBook'],'assets','images','bg')
 
 config = ConfigParser()
-config.read("main.cfg")
+config.read(f"{os.environ['BillBook']}/main.cfg")
 
 # CONSTANTS
 FIRST = config.getboolean("APP", "first_time")
@@ -250,20 +250,101 @@ class CustomAddButton(MDBoxLayout, ButtonBehavior, RectangularRippleBehavior, Im
 	""" Custom Add Button """
 
 
-class WriteTransition(ShaderTransition):
-	WRITE_TRANSITION_FS = '''$HEADER$
-	uniform float t;
-	uniform sampler2D tex_in;
-	uniform sampler2D tex_out;
+class PageCurlTransition(ShaderTransition):
+	Direction = OptionProperty("Bottom_to_Top", options=["Bottom_to_Top", "Top_to_Bottom"])
 
-	void main(void) {
-		vec4 cin = texture2D(tex_in, tex_coord0);
-		vec4 cout = texture2D(tex_out, tex_coord0);
-		gl_FragColor = mix(cout, cin, clamp((-1.5 - 1.5*tex_coord0.y + 2.5*t),
-			0.0, 1.0));
-	}
-	'''
-	fs = StringProperty(WRITE_TRANSITION_FS)
+	# Got this awesome shader from 'laserdog' in shadertoy ---> https://www.shadertoy.com/view/ls3cDB
+	fs = """
+			$HEADER$
+
+			#define pi 3.14159265359
+			#define radius .1
+
+			uniform float t;
+			uniform float direction;
+			uniform float aspect;
+			uniform vec2 resolution;
+			uniform sampler2D tex_in;
+			uniform sampler2D tex_out;
+
+			//IDK why but need to remap it to work, if something doesnt works try remap xD
+			float map(float value)
+			{
+			  float low_map_from = 0., high_map_from = 1., low_map_to = 0.075, high_map_to = -1.15;
+			  return low_map_to + (value - low_map_from) * (high_map_to - low_map_to) / (high_map_from - low_map_from);
+			}
+
+			void main( void )
+			{
+			    float aspect_ratio = 0.0;
+			    if (aspect == 1.0) {aspect_ratio = resolution.x / resolution.y;}
+			    else {aspect_ratio = resolution.y / resolution.x; }
+
+			    vec2 uv = gl_FragCoord.xy/resolution.xy;
+			    vec2 dir = vec2(0.15,-1.0);
+			    vec2 origin = vec2(0.0,0.0);
+			    
+			    float move = 0.;
+			    if (direction == 1.0) {move = map(t);}
+			    else {move = map(1.0 - t);}
+			    
+
+			    float proj = dot(uv - origin, dir);
+			    float dist = proj - move ;
+			    
+			    vec2 linePoint = uv - dist * dir ;
+			    
+			    if (dist > radius)
+			    {
+			        if (direction == 1.0) {gl_FragColor = texture2D(tex_in, uv);}
+			        else{gl_FragColor = texture2D(tex_out, uv);}
+
+			        gl_FragColor.rgb *= pow(clamp(dist - radius, 0., 1.) * 1.5, .2);
+			    }
+			    else if (dist >= 0.)
+			    {
+			        float theta = asin(dist / radius);
+			        vec2 p2 = linePoint + dir * (pi - theta) * radius;
+			        vec2 p1 = linePoint + dir * theta * radius;
+			        uv = (p2.x <= aspect_ratio && p2.y <= 1. && p2.x > 0. && p2.y > 0.) ? p2 : p1;
+
+			        if (direction == 1.0) {gl_FragColor = texture2D(tex_out, uv);}
+			        else {gl_FragColor = texture2D(tex_in, uv);}
+
+			        gl_FragColor.rgb *= pow(clamp((radius - dist) / radius, 0., 1.), .2);
+			    }
+			    else 
+			    {
+			        vec2 p = linePoint + dir * (abs(dist) + pi * radius) ;
+			        uv = (p.x <= aspect_ratio && p.y <= 1. && p.x > 0. && p.y > 0.) ? p : uv;
+			        
+			        if (direction == 1.0) {gl_FragColor = texture2D(tex_out, uv);}
+			        else {gl_FragColor = texture2D(tex_in, uv);}
+			    }
+			    //gl_FragColor = vec4(uv,00,1.0);
+			}
+		"""
+
+	fs = StringProperty(fs)
+	clearcolor = ColorProperty([0, 0, 0, 0])
+
+	def add_screen(self, screen):
+		super().add_screen(screen)
+		self.render_ctx["resolution"] = list(map(float, screen.size))
+
+		aspect_ratio = screen.size[0]/screen.size[1]
+		
+		if aspect_ratio >= 1:
+			self.render_ctx["aspect"] = 1.0
+
+		else:
+			self.render_ctx["aspect"] = 2.0
+
+		if self.Direction == "Bottom_to_Top":
+			self.render_ctx["direction"] = 1.0
+		
+		else:
+			self.render_ctx["direction"] = 2.0
 
 
 
@@ -281,13 +362,13 @@ class BillBookApp(MDApp):
 	Search = ObjectProperty()
 	Area = ObjectProperty()
 
-	# def configure(self):
-	# 	if FIRST:
-	# 		for area in AREAS:
-	# 			create_avatar(avatar_name=area,AVATAR_DIR=AVATAR_DIR)
-	# 			config['APP']['first_time'] = "False"
-	# 			with open('main.cfg','w') as config_file:
-	# 				config.write(config_file)
+	def configure(self):
+		if FIRST:
+			for area in AREAS:
+				create_avatar(avatar_name=area,AVATAR_DIR=AVATAR_DIR)
+				config['APP']['first_time'] = "False"
+				with open(f"{os.environ['BillBook']}/main.cfg",'w') as config_file:
+					config.write(config_file)
 
 	def update(self, *args):
 		self.pad = \
@@ -297,7 +378,7 @@ class BillBookApp(MDApp):
 			* self.kv.ids.custom_chart.ids.label.font_size
 
 	def build(self):
-		self.kv = Builder.load_file('main.kv')
+		self.kv = Builder.load_file(f'{os.environ["BillBook"]}/main.kv')
 		inspector.create_inspector(Window, self.kv)
 		return self.kv
 	
@@ -331,9 +412,12 @@ class BillBookApp(MDApp):
 		
 	def switch_screen(self,from_screen, to_screen):
 		if from_screen == 'product_carousel_screen' and to_screen == 'area_screen':
-			self.kv.ids.screens.transition = WriteTransition()
+			self.kv.ids.screens.transition = PageCurlTransition(duration=1, Direction="Bottom_to_Top")
 			self.kv.ids.screens.current = to_screen
 
+		elif from_screen == 'area_screen' and to_screen == 'product_carousel_screen':
+			self.kv.ids.screens.transition = PageCurlTransition(duration=1, Direction="Top_to_Bottom")
+			self.kv.ids.screens.current = to_screen
 
 if __name__ == '__main__':
 	BillBookApp().run()
