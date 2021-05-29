@@ -469,7 +469,6 @@ from kivy.lang import Builder
 from kivy.metrics import dp, sp
 from kivy.properties import (
     BooleanProperty,
-    BoundedNumericProperty,
     DictProperty,
     ListProperty,
     NumericProperty,
@@ -1030,8 +1029,11 @@ class BaseRectangularButton(RectangularRippleBehavior, BaseButton):
     appropriate on-touch behavior. Also maintains the correct minimum width
     as stated in guidelines.
     """
+    
+    def on_width(self, *args):
+        if self.width < 88:
+            self.width = 88
 
-    width = BoundedNumericProperty(88, min=88, max=None, errorhandler=lambda x: 88)
     text = StringProperty("")
     """Button text.
 

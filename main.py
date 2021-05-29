@@ -5,7 +5,7 @@ mobile_screen_sim('samsung')
 from kivy.properties import NumericProperty, StringProperty, \
 	ObjectProperty, OptionProperty, ColorProperty
 
-from kivy.uix.screenmanager import ShaderTransition
+from kivy.uix.screenmanager import ShaderTransition, TransitionBase, AnimationTransition
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.animation import Animation
 from kivy.core.window import Window
@@ -24,6 +24,7 @@ from kivymd.uix.list import OneLineAvatarListItem, ImageLeftWidget, \
 
 from kivymd.uix.floatlayout import MDFloatLayout
 from kivymd.uix.button import BaseFlatIconButton
+from kivymd.uix.behaviors import TouchBehavior
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.icon_definitions import md_icons
 from kivymd.theming import ThemableBehavior
@@ -48,13 +49,15 @@ else:
 
 app = MDApp.get_running_app
 
-PRODUCTS_DIR = os.path.join(os.environ['BillBook'],'assets','images','products')
-AVATAR_DIR = os.path.join(os.environ['BillBook'],'assets','images','avatars')
-ICON_DIR = os.path.join(os.environ['BillBook'],'assets','images','icons')
-BG_DIR = os.path.join(os.environ['BillBook'],'assets','images','bg')
+BILLBOOK_DIR = os.environ["BillBook"]
+PRODUCTS_DIR = os.path.join(BILLBOOK_DIR,'assets','images','products')
+AVATAR_DIR = os.path.join(BILLBOOK_DIR,'assets','images','avatars')
+ICON_DIR = os.path.join(BILLBOOK_DIR,'assets','images','icons')
+SHADERS_DIR = os.path.join(BILLBOOK_DIR,'assets','shaders')
+BG_DIR = os.path.join(BILLBOOK_DIR,'assets','images','bg')
 
 config = ConfigParser()
-config.read(f"{os.environ['BillBook']}/main.cfg")
+config.read(f"{BILLBOOK_DIR}/main.cfg")
 
 # CONSTANTS
 FIRST = config.getboolean("APP", "first_time")
@@ -70,7 +73,8 @@ class Toolbar(ThemableBehavior, FakeRectangularElevationBehavior,
 		self.md_bg_color = (0, 0, 0, 0)
 	def set_search_mode(self, mode=False):
 		if mode:
-			app().kv.ids.screens.transition.direction = 'up'
+			app().kv.ids.screens.transition = SingleSlideTransition()
+			app().kv.ids.screens.transition.Direction = 'up'
 			app().kv.ids.screens.current = 'search_result_screen'
 			size = 0
 
@@ -91,8 +95,8 @@ class Toolbar(ThemableBehavior, FakeRectangularElevationBehavior,
 			Animation(opacity=1, 
 					  d=0.1).start(self.ids.search_bar)
 		else:
-			
-			app().kv.ids.screens.transition.direction = 'down'
+			app().kv.ids.screens.transition = SingleSlideTransition()
+			app().kv.ids.screens.transition.Direction = 'down'
 			app().kv.ids.screens.current = 'product_carousel_screen'
 			size = dp(42)
 
@@ -121,7 +125,7 @@ class Toolbar(ThemableBehavior, FakeRectangularElevationBehavior,
 			app().kv.ids.search_results_container.ids.rv.data.append(
 				{
 					"viewclass": "OneLineAvatarSearchListItem",
-					"source": "assets/images/avatars/T.png",
+					"source": f"{AVATAR_DIR}/{callback[0].upper()}.png",
 					"text": name_icon,
 					"on_release":lambda:print(callback)
 				}
@@ -181,6 +185,9 @@ class CustomIconFlatButton(BaseFlatIconButton):
 class OneLineAvatarSearchListItem(OneLineAvatarListItem):
 	source = StringProperty()
 
+class CustomOneLineAvatarListItem(OneLineAvatarListItem, TouchBehavior):
+	def on_long_touch(self, *args):
+		print("<on_long_touch> event")
 
 # Carousel Items
 class CustomCarouselItem(MDFloatLayout):
@@ -195,7 +202,7 @@ class CustomCarouselItem(MDFloatLayout):
 					product_image_name)
 
 			app().kv.ids.custom_carousel.ids.car.add_widget(CustomCarouselItem(source=path_to_product_image,
-					product=self.product_pic_dict[product_image_name]))
+																			   product=self.product_pic_dict[product_image_name]))
 
 		app().kv.ids.custom_carousel.ids.car.children[0].children[0].ids.lab.bind(pos=app().update)
 
@@ -225,107 +232,49 @@ class CustomChart(MDFloatLayout, ButtonBehavior,
 		app().kv.ids.custom_chart.ids.pie.bind(size=app().update)
 
 
-class Area:
+class set_list:
 	def set_area_list(self):
 		for area in sorted(AREAS):
 			source = os.path.join(AVATAR_DIR,f'{area[0]}.png')
 			
 			avatar = ImageLeftWidget(source=source)
-			area_container_item = OneLineAvatarListItem(text=f"{area}",on_release=lambda area:print(area.text))
+			area_container_item = CustomOneLineAvatarListItem(text=f"{area}",on_release=lambda area:print(dir(area)))
 			area_container_item.add_widget(avatar)
 			app().kv.ids.area_container.add_widget(area_container_item)
 
-class Shop:
 	def set_shop_list(self):
 		for shop in SHOPS:
 			source = os.path.join(AVATAR_DIR,f'{shop[0]}.png')
 
 			avatar = ImageLeftWidget(source=source)
-			shop_container_item = OneLineAvatarListItem(text=f"{shop}",on_release=lambda area:print(shop.text))
+			shop_container_item = CustomOneLineAvatarListItem(text=f"{shop}",on_release=lambda area:print(shop.text))
 			shop_container_item.add_widget(avatar)
 			app().kv.ids.shop_container.add_widget(shop_container_item)
+
+			app().kv.ids.shop_container.ids.rv.data.append(
+				{
+					"viewclass": "OneLineAvatarSearchListItem",
+					"source": f"{AVATAR_DIR}/T.png",
+					"text": name_icon,
+					"on_release":lambda:print(callback)
+				}
+			)
+
+
 
 
 class CustomAddButton(MDBoxLayout, ButtonBehavior, RectangularRippleBehavior, Image):
 	""" Custom Add Button """
 
 
+# Transitions
 class PageCurlTransition(ShaderTransition):
-	Direction = OptionProperty("Bottom_to_Top", options=["Bottom_to_Top", "Top_to_Bottom"])
+	Direction = OptionProperty("bt", options=["bt", "tb"])
 
-	# Got this awesome shader from 'laserdog' in shadertoy ---> https://www.shadertoy.com/view/ls3cDB
-	fs = """
-			$HEADER$
+	page_curl = open(f'{SHADERS_DIR}/page_curl.frag','r').read()
 
-			#define pi 3.14159265359
-			#define radius .1
+	fs = StringProperty(page_curl)
 
-			uniform float t;
-			uniform float direction;
-			uniform float aspect;
-			uniform vec2 resolution;
-			uniform sampler2D tex_in;
-			uniform sampler2D tex_out;
-
-			//IDK why but need to remap it to work, if something doesnt works try remap xD
-			float map(float value)
-			{
-			  float low_map_from = 0., high_map_from = 1., low_map_to = 0.075, high_map_to = -1.15;
-			  return low_map_to + (value - low_map_from) * (high_map_to - low_map_to) / (high_map_from - low_map_from);
-			}
-
-			void main( void )
-			{
-			    float aspect_ratio = 0.0;
-			    if (aspect == 1.0) {aspect_ratio = resolution.x / resolution.y;}
-			    else {aspect_ratio = resolution.y / resolution.x; }
-
-			    vec2 uv = gl_FragCoord.xy/resolution.xy;
-			    vec2 dir = vec2(0.15,-1.0);
-			    vec2 origin = vec2(0.0,0.0);
-			    
-			    float move = 0.;
-			    if (direction == 1.0) {move = map(t);}
-			    else {move = map(1.0 - t);}
-			    
-
-			    float proj = dot(uv - origin, dir);
-			    float dist = proj - move ;
-			    
-			    vec2 linePoint = uv - dist * dir ;
-			    
-			    if (dist > radius)
-			    {
-			        if (direction == 1.0) {gl_FragColor = texture2D(tex_in, uv);}
-			        else{gl_FragColor = texture2D(tex_out, uv);}
-
-			        gl_FragColor.rgb *= pow(clamp(dist - radius, 0., 1.) * 1.5, .2);
-			    }
-			    else if (dist >= 0.)
-			    {
-			        float theta = asin(dist / radius);
-			        vec2 p2 = linePoint + dir * (pi - theta) * radius;
-			        vec2 p1 = linePoint + dir * theta * radius;
-			        uv = (p2.x <= aspect_ratio && p2.y <= 1. && p2.x > 0. && p2.y > 0.) ? p2 : p1;
-
-			        if (direction == 1.0) {gl_FragColor = texture2D(tex_out, uv);}
-			        else {gl_FragColor = texture2D(tex_in, uv);}
-
-			        gl_FragColor.rgb *= pow(clamp((radius - dist) / radius, 0., 1.), .2);
-			    }
-			    else 
-			    {
-			        vec2 p = linePoint + dir * (abs(dist) + pi * radius) ;
-			        uv = (p.x <= aspect_ratio && p.y <= 1. && p.x > 0. && p.y > 0.) ? p : uv;
-			        
-			        if (direction == 1.0) {gl_FragColor = texture2D(tex_out, uv);}
-			        else {gl_FragColor = texture2D(tex_in, uv);}
-			    }
-			    //gl_FragColor = vec4(uv,00,1.0);
-			}
-		"""
-
-	fs = StringProperty(fs)
 	clearcolor = ColorProperty([0, 0, 0, 0])
 
 	def add_screen(self, screen):
@@ -334,19 +283,25 @@ class PageCurlTransition(ShaderTransition):
 
 		aspect_ratio = screen.size[0]/screen.size[1]
 		
-		if aspect_ratio >= 1:
-			self.render_ctx["aspect"] = 1.0
+		self.render_ctx["aspect"] = 1.0 * (aspect_ratio > 1.0) + 2.0 * (1.0 >= aspect_ratio)
 
-		else:
-			self.render_ctx["aspect"] = 2.0
-
-		if self.Direction == "Bottom_to_Top":
-			self.render_ctx["direction"] = 1.0
-		
-		else:
-			self.render_ctx["direction"] = 2.0
+		self.render_ctx["direction"] = 1.0 if self.Direction == "bt" else 2.0
 
 
+class SingleSlideTransition(ShaderTransition):
+	Direction = OptionProperty("up", options=["up", "down"])
+	
+	slide_over = open(f'{SHADERS_DIR}/slide_over.frag','r').read()
+
+	fs = StringProperty(slide_over)
+
+	clearcolor = ColorProperty([0, 0, 0, 0])
+
+	def add_screen(self, screen):
+		super().add_screen(screen)
+		self.render_ctx["resolution"] = list(map(float, screen.size))
+
+		self.render_ctx["direction"] = 1.0 if self.Direction == "down" else 2.0
 
 
 # App
@@ -367,7 +322,7 @@ class BillBookApp(MDApp):
 			for area in AREAS:
 				create_avatar(avatar_name=area,AVATAR_DIR=AVATAR_DIR)
 				config['APP']['first_time'] = "False"
-				with open(f"{os.environ['BillBook']}/main.cfg",'w') as config_file:
+				with open(f"{BILLBOOK_DIR}/main.cfg",'w') as config_file:
 					config.write(config_file)
 
 	def update(self, *args):
@@ -378,7 +333,7 @@ class BillBookApp(MDApp):
 			* self.kv.ids.custom_chart.ids.label.font_size
 
 	def build(self):
-		self.kv = Builder.load_file(f'{os.environ["BillBook"]}/main.kv')
+		self.kv = Builder.load_file(f'{BILLBOOK_DIR}/main.kv')
 		inspector.create_inspector(Window, self.kv)
 		return self.kv
 	
@@ -398,8 +353,8 @@ class BillBookApp(MDApp):
 		self.Search = Toolbar()
 		self.Search.set_search_list(text="",search=True)
 
-		self.Area = Area()
-		self.Area.set_area_list()
+		self.set = set_list()
+		self.set.set_area_list()
 
 	def on_pause(self):
 		return True
@@ -410,14 +365,9 @@ class BillBookApp(MDApp):
 	def on_stop(self):
 		return True
 		
-	def switch_screen(self,from_screen, to_screen):
-		if from_screen == 'product_carousel_screen' and to_screen == 'area_screen':
-			self.kv.ids.screens.transition = PageCurlTransition(duration=1, Direction="Bottom_to_Top")
-			self.kv.ids.screens.current = to_screen
-
-		elif from_screen == 'area_screen' and to_screen == 'product_carousel_screen':
-			self.kv.ids.screens.transition = PageCurlTransition(duration=1, Direction="Top_to_Bottom")
-			self.kv.ids.screens.current = to_screen
+	def switch_screen(self,screen,transition):
+		self.kv.ids.screens.transition = PageCurlTransition(duration=1, Direction=transition)
+		self.kv.ids.screens.current = screen
 
 if __name__ == '__main__':
 	BillBookApp().run()

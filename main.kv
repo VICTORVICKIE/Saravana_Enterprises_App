@@ -119,6 +119,7 @@
         text_color: white
         
         # on_release:app.kv.export_to_png("SS.png")
+        on_release:print(app.kv.ids)
 
 
 	MDSeparator:
@@ -149,8 +150,8 @@
     	markup:True
 
         on_release:
-            if app.kv.ids.screens.current == 'product_carousel_screen': app.switch_screen(app.kv.ids.screens.current, 'area_screen')
-            elif app.kv.ids.screens.current == 'area_screen': app.switch_screen(app.kv.ids.screens.current, 'product_carousel_screen')
+            if app.kv.ids.screens.current == 'product_carousel_screen': app.switch_screen('area_screen', 'bt')
+            elif app.kv.ids.screens.current == 'area_screen': app.switch_screen('product_carousel_screen', 'tb')
 
 
 <CustomImageIconButton>
@@ -233,6 +234,7 @@
 
 <OneLineAvatarSearchListItem>
     markup: True
+    divider:"Inset"
     ImageLeftWidget:
         source: root.source
 
@@ -334,7 +336,7 @@
         id: chart_box
         orientation: "vertical"
         pos_hint: {"center_y": .6}
-
+        
         AKPieChart:
             id:pie
             pos_hint:{"center_x": .5}
@@ -345,6 +347,7 @@
 
             color_mode: "Custom"
             custom_colors : root.custom_colors
+            
 
 
 <ShopContainer@MDBoxLayout>:

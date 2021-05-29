@@ -1,6 +1,6 @@
 from kivy.animation import Animation
 from kivy.clock import Clock
-from kivy.graphics import Color, Ellipse
+from kivy.graphics import Color, Ellipse, Rotate
 from kivy.lang.builder import Builder
 from kivy.properties import (
     BooleanProperty,
@@ -103,6 +103,7 @@ class AKPieChart(ThemableBehavior, BoxLayout):
 
         for title, value in items.items():
             with self.canvas.before:
+
 
                 if self.starting_animation:
                     alpha = 0

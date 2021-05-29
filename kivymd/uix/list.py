@@ -474,7 +474,7 @@ Builder.load_string(
             points: (root.x ,root.y, root.x+self.width, root.y)\
                     if root.divider == 'Full' else\
                     (root.x+root._txt_left_pad, root.y,\
-                    root.x+self.width-root._txt_left_pad-root._txt_right_pad,\
+                    root.x+self.width,\
                     root.y)
         Color:
             rgba: root.bg_color if root.bg_color else (0, 0, 0, 0)
